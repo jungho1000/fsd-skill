@@ -5,13 +5,15 @@ triggers: [segment, 세그먼트, ui, model, api, config, mapper, DTO, 커스텀
 status: published
 ---
 
-# FSD 세그먼트 규칙
+# FSD 세그먼트 — 권장 패턴
+
+> **이 문서는 권장 패턴이다.** 세그먼트의 하드 룰(이름·구성 자유 + 단방향 의존성 + 이름 금지 목록)은 [[segment-rules]]에 있다. 아래 내용은 "이 패턴을 따를 때" 가장 흔히 마주치는 결정들을 모아 둔 것이다.
 
 ## 세그먼트 (Segment)
 
-### 세그먼트 간 의존성 방향
+### 권장 의존성 방향
 
-슬라이스 내부에서 세그먼트 간에도 단방향 의존성을 적용한다:
+`ui/model/api` 패턴을 따를 때의 흐름:
 
 ```
 ui  →  model  →  api
@@ -21,7 +23,25 @@ ui  →  model  →  api
 - `model/`은 `api/` 참조 가능
 - `api/`는 슬라이스 내 다른 세그먼트를 참조할 수 없음
 
+이는 하드 룰("단방향 의존성")의 한 인스턴스다. 다른 세그먼트 구성을 쓰더라도 *임의의 두 세그먼트 사이에 방향은 하나*라는 원칙은 동일하게 적용된다.
+
+### tier 개념 (참고)
+
+> 팀에서 합의된 분류는 아니다 — 참고 모델로만 다룬다.
+
+`ui → model → api`는 더 일반적인 *tier* 개념의 한 인스턴스로 볼 수 있다.
+
+| tier | 역할 | `ui/model/api` 매핑 |
+|------|------|--------------------|
+| presentation | 화면, 상호작용 | `ui` |
+| domain | 비즈니스 규칙, 상태 | `model` |
+| infrastructure | 외부 통신, 저장소 | `api` |
+
+방향성은 **바깥(presentation) → 안쪽(infrastructure)**. 새 커스텀 세그먼트(`forms/`, `validation/`, `services/` 등)를 만들 때 어느 tier에 해당하는지 식별해두면 단방향 의존성을 자연스럽게 만족시킬 수 있다.
+
 ### 표준 세그먼트 이름
+
+`ui/api/model/config`는 가장 흔히 쓰이는 이름 모음이다. **필수는 아니다** — 슬라이스에 필요한 것만 두면 된다.
 
 | 세그먼트 | 목적 | 포함 내용 |
 |---------|------|---------|
@@ -30,7 +50,7 @@ ui  →  model  →  api
 | `model` | 데이터·상태를 다루는 것 | 도메인 모델 타입, 스토어, 비즈니스 로직, 검증, **매퍼** |
 | `config` | 설정·플래그 | 설정값, feature flag |
 
-표준 세그먼트 외에 커스텀 세그먼트를 자유롭게 추가할 수 있다. 단, 이름은 *무엇을 하는가*를 드러내야 한다 (`components`, `hooks`, `types`, `utils`, `helpers`, `lib` 같은 *기술 타입* 명칭 금지 — `→ 세그먼트 이름 규칙` 참고).
+이외에 커스텀 세그먼트를 자유롭게 추가할 수 있다. 단, 이름은 *무엇을 하는가*를 드러내야 한다 (`components`, `hooks`, `types`, `utils`, `helpers`, `lib` 같은 *기술 타입* 명칭 금지 — `→ 세그먼트 이름 규칙` 참고).
 
 ### API 응답 타입 처리
 
@@ -108,9 +128,17 @@ export interface ApiError {
 
 판단 기준: **"이 에러 코드가 비즈니스 의미를 가지는가?"**
 
-### 매퍼(Mapper)는 `model/`에
+### 매퍼는 데이터를 소비하는 세그먼트에
 
-DTO → 도메인 모델 변환 함수(mapper)를 `api/`에 두면 의존성 방향이 깨진다.
+매퍼는 *세그먼트(또는 tier) 경계*에서 데이터를 변환하는 코드다. **변환된 데이터를 소비하는 쪽** 세그먼트에 둔다 — 그래야 단방향 의존성이 자연스럽게 유지된다.
+
+| 변환 방향 | 매퍼 위치 |
+|---------|---------|
+| DTO(infrastructure) → 도메인 모델 | 도메인을 정의한 세그먼트 (예: `model/`) |
+| 도메인 모델 → UI ViewModel | 표현 세그먼트 (예: `ui/`) |
+| 변환이 굳이 필요 없음 | 매퍼 두지 않음 — `shared/api/` re-export로 충분 |
+
+매퍼를 *데이터 출처* 쪽 세그먼트에 두면 출처 세그먼트가 소비 쪽의 타입을 알아야 하므로 의존성이 역류한다.
 
 ```
 # ❌ api/에 mapper — api가 model(도메인 타입)에 의존 → 방향 위반
@@ -135,6 +163,8 @@ export function adaptProduct(dto: ProductDTO): Product {
   };
 }
 ```
+
+위 예시는 `ui/model/api` 패턴에서의 구체화일 뿐이다. 다른 세그먼트 구성(예: `presentation/domain/services/`)에서도 같은 원칙이 적용된다 — 매퍼는 *변환된 데이터를 쓰는 쪽*에 둔다.
 
 ### model/ 내부 구성
 
@@ -278,6 +308,7 @@ shared/
 ## Relations
 
 - defined-by :: [[overview]]
+- extends :: [[segment-rules]]
 - part-of :: [[slices]]
 - depends-on :: [[slices]]
 - extended-by :: [[tanstack-query]]

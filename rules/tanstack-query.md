@@ -7,6 +7,8 @@ status: published
 
 # FSD + TanStack Query 규칙
 
+> **이 문서는 `ui/model/api` 권장 패턴을 따를 때의 가이드다.** 세그먼트 구성·이름은 자유 ([[segment-rules]]). 아래의 `model/`·`api/` 언급은 "이 패턴에서의 명칭"이며, 다른 구성에서도 동일한 원칙(서버 상태는 도메인 tier에 두기, 매퍼는 변환된 데이터를 소비하는 쪽에 두기)이 적용된다.
+
 ## 핵심 원칙: TanStack Query는 model 계층
 
 TanStack Query는 서버 상태를 캐싱하고 동기화하는 **모델 계층 도구**다.  
@@ -67,11 +69,13 @@ model/  = 도메인 데이터 관리 (queryOptions, useQuery, useMutation, mappe
 ui/     = 컴포넌트 (model/의 훅을 호출)
 ```
 
-세그먼트 간 의존성은 그대로 유지된다:
+이 패턴에서의 세그먼트 간 의존성 흐름:
 
 ```
 ui  →  model  →  api
 ```
+
+(일반화된 단방향 의존성 룰의 한 인스턴스 — [[segment-rules]])
 
 ---
 
@@ -368,6 +372,7 @@ export const SuspenseProvider = ({ children }: { children: ReactNode }) => (
 
 - extends :: [[segments]]
 - depends-on :: [[segments]]
+- depends-on :: [[segment-rules]]
 - depends-on :: [[slices]]
 - applies-to :: [[entities]]
 - applies-to :: [[slices]]

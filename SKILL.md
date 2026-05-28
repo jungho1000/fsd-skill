@@ -22,7 +22,8 @@ FSD 아키텍처 가이드 — 코드 배치, 구조 설계, 규칙 준수 여�
 |--------|-------------|--------------|
 | 레이어 선택 | "어디에", "어느 레이어", "layer", "배치" | `rules/layers.md` |
 | 슬라이스 식별·그룹핑·크기 | "슬라이스", "slice", "도메인 분리", "그룹핑" | `rules/slices.md` |
-| 세그먼트·매퍼·DTO·폴더 구조 | "세그먼트", "segment", "ui", "model", "api", "mapper", "DTO", "폴더 구조" | `rules/segments.md` |
+| 세그먼트 하드 룰 (자유·단방향·금지 이름) | "세그먼트 규칙", "필수 세그먼트", "ui model api 필수", "단방향", "세그먼트 자유" | `rules/segment-rules.md` |
+| 세그먼트 권장 패턴·매퍼·DTO·폴더 구조 | "세그먼트", "segment", "ui", "model", "api", "mapper", "DTO", "tier", "폴더 구조" | `rules/segments.md` |
 | Public API / index | "index.ts", "export", "공개 API", "import 경로", "배럴" | `rules/public-api.md` |
 | Cross-import | "같은 레이어", "cross-import", "import 오류", "순환 참조" | `rules/cross-imports.md` |
 | Entities 설계 | "entities", "엔티티", "과도한", "CRUD", "단일 엔티티" | `rules/entities.md` |
@@ -30,6 +31,8 @@ FSD 아키텍처 가이드 — 코드 배치, 구조 설계, 규칙 준수 여�
 | 전반적 개요 | (분류 불가 또는 광범위한 질문) | `rules/overview.md` |
 
 > 질문이 모호하면 `rules/overview.md`를 먼저 읽어 컨텍스트를 파악한 뒤 추가 파일을 로드한다.
+>
+> `segment-rules.md`와 `segments.md`는 의도적으로 분리되어 있다. **하드 룰**(팀이 합의한 강제 조건)은 `segment-rules.md`에, **권장 패턴**(흔히 마주치는 결정·예시·매퍼 위치·tier 등)은 `segments.md`에 있다. 모호하면 둘 다 로드한다.
 
 각 룰 파일의 끝에는 `## Relations` 섹션이 있다. 그 안의 `predicate :: [[다른-룰]]` 항목을 따라 *다음에 읽을 룰*을 결정하라. predicate 어휘:
 
@@ -72,8 +75,11 @@ Read 툴로 매핑된 파일을 읽는다:
 - [ ] 상위 레이어 import 없음 (하위 레이어는 상위를 참조 불가)
 - [ ] 같은 레이어 간 cross-import 없음 (entities의 @x 제외)
 - [ ] Public API가 `index.ts`로 노출됨
-- [ ] 세그먼트 이름이 목적을 기술함 (`components`, `hooks`, `types`는 금지)
+- [ ] 세그먼트 이름이 목적을 기술함 (`components`, `hooks`, `types`, `utils`, `helpers`, `lib`는 금지)
+- [ ] 슬라이스 안에서 세그먼트 간 사이클 없음 (단방향 의존성)
 - [ ] Shared/App 레이어는 슬라이스 없이 세그먼트 직접 배치
+
+> 세그먼트 이름 자체(`ui/model/api` 사용 여부 등)는 *체크 대상이 아니다* — 자유. 하드 룰은 [[rules/segment-rules.md]] 참고.
 
 ---
 
@@ -98,9 +104,9 @@ src/
 ```
                   overview
                  ↙   ↓   ↘
-            layers  slices  segments
-              │     ↕  │       ↑
-              │     │  └── public-api
+            layers  slices  segment-rules (하드 룰)
+              │     ↕  │        ↑
+              │     │  └── segments (권장 패턴) ─── public-api
               │     │       │
               │     └── cross-imports
               ↓                ↑
@@ -110,6 +116,7 @@ src/
 
 - `overview` 가 모든 룰을 정의 (defines)
 - `layers` 가 슬라이스의 컨테이너, `slices` 가 세그먼트의 컨테이너
+- `segment-rules` 는 세그먼트의 *하드 룰*(자유·단방향·금지 이름), `segments` 는 *권장 패턴*(`ui/model/api`, tier, 매퍼 위치 등)
 - `public-api` 와 `cross-imports` 는 슬라이스 경계를 다룸
 - `entities` 와 `tanstack-query` 는 특정 영역 심화
 - 각 파일의 `## Relations` 섹션에서 정확한 predicate를 확인

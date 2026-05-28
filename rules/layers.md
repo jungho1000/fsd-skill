@@ -56,6 +56,8 @@ DTO를 그대로 렌더링하기만 한다면(=변환이 없다면) entities로 
 
 - **포함**: 단일 엔티티 CRUD query/mutation·도메인 타입·mapper(model), 단일 엔티티 fetch 함수·DTO(api), 도메인 props만 받는 표현 UI(ui)
 
+아래는 `ui/model/api` 패턴을 따를 때의 *예시*다. 세그먼트 구성은 자유 — 하드 룰은 [[segment-rules]].
+
 ```
 entities/
 ├── user/
@@ -71,6 +73,8 @@ entities/
 - **유즈케이스 / 시나리오** — 여러 엔티티를 오케스트레이션하거나 사용자 액션 흐름을 담는 슬라이스
 - 두 곳 이상에서 반복되는 시나리오만 features로 추출 (한 페이지 한정이면 해당 page에)
 - **포함**: 시나리오 UI(ui), 여러 엔티티 조합 query/mutation(model), 액션 흐름 로직(model), feature flag(config)
+
+아래는 `ui/model/api` 패턴 예시 — 세그먼트 구성은 슬라이스마다 자유다.
 
 ```
 features/
@@ -122,4 +126,5 @@ app/
 - required-by :: [[slices]]
 - required-by :: [[entities]]
 - required-by :: [[cross-imports]]
+- see-also :: [[segment-rules]]
 - see-also :: [[public-api]]

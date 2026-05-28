@@ -29,7 +29,7 @@ shared    ← 프레임워크 무관 공통 코드
 |------|------|------|
 | 1st | Layer | 책임 범위에 따른 최상위 분리 |
 | 2nd | Slice | 비즈니스 도메인에 따른 분리 |
-| 3rd | Segment | 기술적 목적에 따른 분리 (`ui`, `api`, `model`, `config` + 목적이 드러나는 커스텀 세그먼트) |
+| 3rd | Segment | 기술적 목적에 따른 분리. 이름은 자유 — `ui`, `api`, `model`, `config`가 흔히 쓰이지만 *필수는 아니다*. 목적을 드러내는 커스텀 세그먼트 추가 가능. 하드 룰은 [[segment-rules]]. |
 
 ## "어디에 넣을까?" 의사결정 트리
 
@@ -56,7 +56,7 @@ shared    ← 프레임워크 무관 공통 코드
 **Step 5: 두 곳 이상에서 반복되는 단일 도메인 엔티티이고, DTO 변환·파생 데이터·도메인 메서드 중 하나라도 있는가?**
 - Yes, 둘 다 충족 → `entities/`
 - 반복은 있으나 변환 없음 → `shared/api/`에서 re-export로 의미 있는 이름 부여
-- 변환은 있으나 한 슬라이스 한정 → 현재 슬라이스의 `model/`에 유지
+- 변환은 있으나 한 슬라이스 한정 → 현재 슬라이스 안에 유지 (도메인 모델을 둔 세그먼트 — 흔히 `model/`)
 
 **황금 규칙**: 의심스러우면 `pages/`에 유지. 실제로 여러 곳에서 사용되고 경계가 명확해질 때만 추출한다.
 
@@ -65,7 +65,7 @@ shared    ← 프레임워크 무관 공통 코드
 1. **레이어 import 규칙**: 상위 레이어는 하위를 import할 수 있지만, 하위 레이어는 상위를 import 불가
 2. **슬라이스 독립성**: 같은 레이어의 슬라이스끼리 직접 import 불가 (entities의 @x 제외)
 3. **Public API 규칙**: 슬라이스 외부에서는 `index.ts`만 참조, 내부 파일 직접 접근 불가
-4. **세그먼트 이름**: 목적을 기술해야 함. `components`, `hooks`, `types`, `utils`, `helpers`, `lib`는 금지
+4. **세그먼트 이름**: 목적을 기술해야 함. `components`, `hooks`, `types`, `utils`, `helpers`, `lib`는 금지. `ui/model/api`는 필수가 아니며 이름·구성은 자유 — 자세한 하드 룰은 [[segment-rules]]
 
 ## 레이어별 특수 규칙
 
@@ -83,6 +83,7 @@ shared    ← 프레임워크 무관 공통 코드
 - defines :: [[layers]]
 - defines :: [[slices]]
 - defines :: [[segments]]
+- defines :: [[segment-rules]]
 - defines :: [[public-api]]
 - extended-by :: [[entities]]
 - extended-by :: [[tanstack-query]]

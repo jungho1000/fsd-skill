@@ -52,6 +52,8 @@ features/
 
 ## 전형적인 슬라이스 구조
 
+아래는 `ui/model/api` 패턴 예시 — 세그먼트 이름·구성은 자유다 ([[segment-rules]]).
+
 ```
 features/
 └── user-profile/
@@ -65,7 +67,7 @@ features/
     └── index.ts            ← 슬라이스의 public API (외부가 참조하는 유일한 경로)
 ```
 
-세그먼트(ui/api/model 등)의 책임 정의와 결정 룰은 → `rules/segments.md`.
+세그먼트의 하드 룰은 → [[segment-rules]], 권장 패턴·매퍼 위치·tier 등은 → [[segments]].
 
 ## 슬라이스 크기 기준
 
@@ -78,7 +80,9 @@ features/
 - defined-by :: [[overview]]
 - part-of :: [[layers]]
 - has-part :: [[segments]]
+- has-part :: [[segment-rules]]
 - required-by :: [[segments]]
+- required-by :: [[segment-rules]]
 - required-by :: [[public-api]]
 - required-by :: [[cross-imports]]
 - applies-to :: [[entities]]
