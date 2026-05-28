@@ -44,6 +44,8 @@ export * from "./model/comments";
 
 ## Slice 내부에서의 Import 규칙
 
+> **슬라이스 식별**: `index.ts`가 존재하는 폴더가 슬라이스이고, 그 하위는 세그먼트로만 구성된다 (자세한 식별 룰은 `rules/02-slices-segments.md` "식별 룰" 절 참고).
+
 슬라이스 **내부** 파일 간에는 순환 import를 피하기 위해:
 
 ```ts

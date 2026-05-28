@@ -36,34 +36,43 @@ shared/
 세그먼트 이름은 *무엇을 하는가*를 드러내야 한다. `lib`, `utils`, `helpers` 같은 catch-all 이름은 쓰지 않는다.
 
 ### entities/
-- 비즈니스 도메인 모델 (User, Post, Order 등)
+- **단일** 비즈니스 도메인 엔티티 (User, Post, Order 등)
+- 도메인 모델의 책임: 속성·액션·인스턴스 hydration(DTO → 도메인 모델 변환)
 - 비즈니스가 사용하는 용어 = 슬라이스 이름
-- **포함**: 데이터 스토어(model), 유효성 검증 스키마(model), API 요청(api), UI 표현(ui)
+
+**추출 조건 — 둘 다 충족해야 함**
+
+1. 두 곳 이상에서 반복 사용
+2. DTO 변환·파생 데이터 구성·도메인 메서드 중 하나라도 존재
+
+DTO를 그대로 렌더링하기만 한다면(=변환이 없다면) entities로 끌어올리지 않고 `shared/api/`에서 re-export로 의미 있는 이름만 부여한다. 자세한 가이드는 `rules/05-entities.md`.
+
+- **포함**: 단일 엔티티 CRUD query/mutation·도메인 타입·mapper(model), 단일 엔티티 fetch 함수·DTO(api), 도메인 props만 받는 표현 UI(ui)
 
 ```
 entities/
 ├── user/
-│   ├── model/    # 스토어, 인터페이스
-│   ├── api/      # 사용자 관련 API
-│   ├── ui/       # 사용자 표현 컴포넌트
+│   ├── model/    # User 타입, 도메인 액션, useUserQuery
+│   ├── api/      # fetchUser, updateUser (DTO)
+│   ├── ui/       # UserCard, UserAvatar (도메인 props만)
 │   └── index.ts  # Public API
 └── product/
     └── ...
 ```
 
 ### features/
-- 사용자가 실제로 수행하는 행동/기능
-- **재사용되는 기능**만 features에 넣는다 (한 페이지에서만 쓰이면 해당 page에)
-- **포함**: 폼 UI(ui), API 호출(api), 상태/검증(model), feature flag(config)
+- **유즈케이스 / 시나리오** — 여러 엔티티를 오케스트레이션하거나 사용자 액션 흐름을 담는 슬라이스
+- 두 곳 이상에서 반복되는 시나리오만 features로 추출 (한 페이지 한정이면 해당 page에)
+- **포함**: 시나리오 UI(ui), 여러 엔티티 조합 query/mutation(model), 액션 흐름 로직(model), feature flag(config)
 
 ```
 features/
-├── auth/
-│   ├── ui/       # 로그인 폼
-│   ├── api/      # 로그인 요청
-│   ├── model/    # 인증 상태
+├── checkout/             # Order + Cart + Payment 오케스트레이션
+│   ├── ui/               # 결제 폼·확인 화면
+│   ├── api/              # 결제 요청 (유즈케이스 단위)
+│   ├── model/            # 결제 흐름 로직
 │   └── index.ts
-└── comment/
+└── comment-compose/
     └── ...
 ```
 
@@ -73,7 +82,8 @@ features/
 - Remix 같은 중첩 라우팅에서는 라우터 블록 단위로 활용 가능
 
 ### pages/
-- 하나의 페이지 = 보통 하나의 슬라이스
+- 보통 하나의 페이지 = 하나의 슬라이스
+- 비슷한 페이지들(로그인/회원가입, 상품 목록/상세 등)은 *하나의 슬라이스*로 묶일 수 있음 — 1:1 매핑이 강제되지는 않음
 - 재사용되지 않는 UI는 page 슬라이스 안에 넣어도 괜찮음
 - **포함**: 페이지 UI, 로딩/에러 상태(ui), 데이터 패칭(api)
 
