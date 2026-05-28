@@ -58,8 +58,9 @@ ui  →  model  →  api
 | `ui` | 화면에 그리는 것 | 컴포넌트, 스타일, 화면 렌더링 훅 |
 | `api` | 백엔드와 통신하는 것 | 요청 함수, DTO 타입 |
 | `model` | 데이터·상태를 다루는 것 | 도메인 모델 타입, 스토어, 비즈니스 로직, 검증, **매퍼** |
-| `lib` | 여러 세그먼트가 공유하는 내부 헬퍼 | `ui/`와 `model/` 양쪽에서 필요한 유틸 |
 | `config` | 설정·플래그 | 설정값, feature flag |
+
+표준 세그먼트 외에 커스텀 세그먼트를 자유롭게 추가할 수 있다. 단, 이름은 *무엇을 하는가*를 드러내야 한다 (`components`, `hooks`, `types`, `utils`, `helpers`, `lib` 같은 *기술 타입* 명칭 금지 — `→ 세그먼트 이름 규칙` 참고).
 
 ### API 응답 타입 처리
 
@@ -253,17 +254,30 @@ useProductsQuery()     // TanStack Query를 이용한 상품 조회 훅 (데이�
 마찬가지로 "순수 함수"도 목적에 따라 다른 세그먼트에 들어간다:
 
 ```ts
-validateUserPolicy(email) → model/      // 회사 이메일 정책 — 비즈니스 규칙
-isValidEmailFormat(email) → shared/lib/ // RFC 포맷 검사 — 도메인 무관 유틸
-fetchProducts()           → api/        // 백엔드 요청
+validateUserPolicy(email) → model/             // 회사 이메일 정책 — 비즈니스 규칙
+isValidEmailFormat(email) → shared/validation/ // RFC 포맷 검사 — 도메인 무관 유틸
+fetchProducts()           → api/               // 백엔드 요청
 ```
 
-**포맷터(`formatDate`, `formatCurrency` 등)는 `shared/lib/`에**  
-포맷의 목적이 UI 렌더링인지 로깅인지 단정짓기 어렵기 때문에, 목적이 모호한 코드는 도메인 무관 유틸로 보고 `shared/lib/`에 둔다.
+**포맷터(`formatDate`, `formatCurrency` 등)는 `shared/format/`에**  
+포맷의 목적이 UI 렌더링인지 로깅인지 단정짓기 어렵지만, *포맷팅*이라는 책임 자체는 명확하므로 `shared/format/` 세그먼트로 묶는다.
 
-**`lib/` 사용 원칙**  
+**공유 코드 분리 원칙**  
 헬퍼 함수는 사용하는 세그먼트 가까이 두는 것이 기본 (응집도 우선).  
-한 세그먼트에서만 쓰인다면 그 세그먼트 안에, **여러 세그먼트에서 공유**해야 할 때 `lib/`로 이동한다.
+한 세그먼트에서만 쓰인다면 그 세그먼트 안에, **여러 세그먼트에서 공유**해야 한다면 별도 세그먼트로 분리해 단방향 참조를 유지한다. 분리된 세그먼트의 이름은 *무엇을 하는가*를 드러내야 한다 (`validation/`, `mapping/`, `format/` 등).
+
+```
+# ❌ ui와 model이 한쪽에 헬퍼를 둠 → 역방향 의존
+features/order/
+├── ui/Order.tsx
+└── model/order.ts          # ui의 헬퍼를 import → model → ui ❌
+
+# ✅ 공유 헬퍼는 별도 세그먼트 → ui·model 모두 단방향으로 의존
+features/order/
+├── ui/Order.tsx            # validation/ import ✅
+├── model/order.ts          # validation/ import ✅
+└── validation/orderRules.ts
+```
 
 **세그먼트 결정 질문**: "이 코드를 변경하면 무엇이 영향을 받는가?"
 - 화면이 바뀐다 → `ui/`
@@ -272,20 +286,24 @@ fetchProducts()           → api/        // 백엔드 요청
 
 ### 커스텀 세그먼트
 
-`app/`과 `shared/`에서는 커스텀 세그먼트를 자유롭게 만들 수 있다:
+모든 레이어에서 커스텀 세그먼트를 자유롭게 만들 수 있다. 단, 이름은 *무엇을 하는가*를 드러내야 한다.
 
 ```
 shared/
 ├── api/
 ├── ui/
-├── lib/
 ├── config/
-├── routes/    ← 커스텀
-├── i18n/      ← 커스텀
-└── auth/      ← 커스텀 (토큰 관리 등)
+├── routes/      ← 라우팅
+├── i18n/        ← 국제화
+├── auth/        ← 토큰 관리
+├── format/      ← 포맷팅 (formatDate, formatCurrency)
+├── validation/  ← 형식 검증 (isValidEmailFormat)
+└── storage/     ← 영속 저장 (localStorage, cookieStorage)
 ```
 
-슬라이스가 있는 레이어(`entities`, `features`, `widgets`, `pages`)에서는 표준 세그먼트를 주로 사용하고, 커스텀은 필요한 경우에만.
+**금지되는 이름**: `components`, `hooks`, `types`, `utils`, `helpers`, `lib` — *기술 타입* 명칭은 안에 무엇이 있는지 알려주지 않는다.
+
+새 파일이 들어올 때 "이건 무엇을 위한 것인가?"를 물어 적절한 세그먼트로 보낸다. 진짜로 단발성이라 카테고리가 어색하면 *해당 사용처 슬라이스 안*에 둔다 — shared 루트에 catch-all 세그먼트는 만들지 않는다.
 
 ## 전형적인 슬라이스 구조
 

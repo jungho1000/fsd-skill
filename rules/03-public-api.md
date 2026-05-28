@@ -82,10 +82,10 @@ import type { Song } from "entities/song/@x/artist";  // ✅
 export type { Song } from "../model/song";
 ```
 
-## shared/ui, shared/lib의 번들 최적화
+## shared 세그먼트의 번들 최적화
 
-`shared/ui`나 `shared/lib`는 단일 index.ts가 트리쉐이킹을 방해할 수 있다.  
-무거운 의존성이 있다면 컴포넌트별 index 분리:
+`shared/ui` 처럼 파일이 많은 세그먼트는 단일 index.ts가 트리쉐이킹을 방해할 수 있다.  
+무거운 의존성이 있다면 항목별 index 분리:
 
 ```
 shared/

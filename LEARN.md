@@ -93,7 +93,7 @@ src/
 └── shared/
     ├── ui/            ← Button, Modal (도메인 무관한 컴포넌트)
     ├── api/           ← HTTP 클라이언트
-    └── lib/           ← formatDate, formatCurrency 등 목적이 모호한 유틸
+    └── format/        ← formatDate, formatCurrency 등 포맷팅 유틸
 ```
 
 **"로그인 기능이 어디에 있지?"** → `features/auth/` 하나만 열면 된다.
@@ -191,7 +191,9 @@ app/
 shared/
 ├── api/
 ├── ui/
-└── lib/
+├── config/
+├── format/
+└── validation/
 
 # 나머지 레이어: 레이어/슬라이스/세그먼트 3단 구조 필수
 features/
@@ -211,10 +213,13 @@ features/
 | 해당하는 코드 | 위치 |
 |-------------|------|
 | UI 컴포넌트 키트 (Button, Input) | `shared/ui/` |
-| 유틸 함수 (formatDate, debounce) | `shared/lib/` |
+| 포맷터 (formatDate, formatCurrency) | `shared/format/` |
+| 형식 검증 (isValidEmailFormat) | `shared/validation/` |
 | API 클라이언트, CRUD 함수 | `shared/api/` |
 | 인증 토큰, 세션 관리 | `shared/auth/` |
 | 환경 변수, 설정값 | `shared/config/` |
+
+> 도메인 무관 유틸은 *목적이 드러나는* 커스텀 세그먼트로 분리한다. `lib`, `utils`, `helpers` 같은 catch-all 이름은 쓰지 않는다.
 
 **Step 2: 앱 전역 초기화 코드인가?**
 - 라우터, 글로벌 프로바이더, 글로벌 스타일 → `app/`
@@ -286,14 +291,14 @@ useScrollAnimation()      → ui/     // 스크롤 애니메이션 제어 → �
 useIntersectionObserver() → ui/     // 뷰포트 진입 감지       → 목적: 화면 표현
 
 // 순수 함수도 목적에 따라 다름
-validateUserPolicy(email) → model/      // 회사 이메일 정책 검증 → 비즈니스 규칙
-isValidEmailFormat(email) → shared/lib/ // RFC 포맷 검사 → 도메인 무관 유틸
-fetchProducts()           → api/        // 상품 목록 요청 → 백엔드 통신
+validateUserPolicy(email) → model/             // 회사 이메일 정책 검증 → 비즈니스 규칙
+isValidEmailFormat(email) → shared/validation/ // RFC 포맷 검사 → 도메인 무관 유틸
+fetchProducts()           → api/               // 상품 목록 요청 → 백엔드 통신
 ```
 
-> **포맷터는 `shared/lib/`에**  
+> **포맷터는 `shared/format/`에**  
 > `formatDate`, `formatCurrency` 같은 포맷터는 UI 렌더링에 쓰이기도 하고 로깅에 쓰이기도 한다.  
-> 목적을 단정짓기 어렵기 때문에 도메인 무관 유틸로 보고 `shared/lib/`에 두는 것이 적합하다.
+> 그러나 *포맷팅*이라는 책임 자체는 명확하므로 `shared/format/` 세그먼트로 묶는다.
 
 ### 표준 세그먼트 — 각각의 목적
 
@@ -302,12 +307,15 @@ fetchProducts()           → api/        // 상품 목록 요청 → 백엔드 
 | `ui/` | **화면에 그리는 것** | 컴포넌트, 스타일, 화면 렌더링 훅 (애니메이션, 인터섹션 등) |
 | `model/` | **데이터·상태를 다루는 것** | 클라이언트 상태(Redux/Zustand), 서버 상태(TanStack Query), 도메인 타입, mapper |
 | `api/` | **백엔드와 통신하는 것** | 요청 함수, DTO 타입 |
-| `lib/` | **여러 세그먼트가 공유하는 내부 헬퍼** | `ui/`와 `model/` 양쪽에서 필요한 유틸, 특정 세그먼트에 귀속되지 않는 코드 |
 | `config/` | **설정·플래그** | 설정값, feature flag |
 
-> **`lib/` 사용 원칙**  
+표준 세그먼트 외에 커스텀 세그먼트를 자유롭게 만들 수 있다. 단, 이름은 *무엇을 하는가*를 드러내야 한다 — `validation/`, `format/`, `storage/`, `mapping/` 등.
+
+> **공유 코드 분리 원칙**  
 > 헬퍼 함수는 **사용하는 세그먼트 가까이 두는 것이 기본** (응집도 우선).  
-> 한 세그먼트에서만 쓰인다면 그 세그먼트 안에, 여러 세그먼트에서 공유해야 할 때 비로소 `lib/`로 이동한다.
+> 한 세그먼트에서만 쓰인다면 그 세그먼트 안에, 여러 세그먼트에서 공유해야 한다면 별도 세그먼트로 분리해 단방향 참조를 유지한다.
+>
+> `lib`, `utils`, `helpers` 같은 catch-all 이름은 쓰지 않는다 — *무엇을 하는가*를 드러내는 이름을 붙인다.
 
 ### model/ 내부 구성
 
@@ -365,7 +373,7 @@ api/update-settings.ts  ← 설정 업데이트
 > - 화면이 바뀐다 → `ui/`
 > - 앱의 상태나 비즈니스 로직이 바뀐다 → `model/`
 > - 백엔드와의 통신이 바뀐다 → `api/`
-> - `ui/`와 `model/` 양쪽 모두 영향받는다 → `lib/` (단, 이 슬라이스 내부에서만 쓰인다면)
+> - `ui/`와 `model/` 양쪽 모두 영향받는다 → 목적이 드러나는 별도 세그먼트로 분리 (`validation/`, `mapping/` 등)
 
 ---
 
@@ -483,8 +491,8 @@ shared/
 
 # ✅ 목적별로 분리
 shared/
-├── lib/
-│   └── date/        ← 날짜 관련 유틸
+├── format/          ← 포맷팅 (formatDate)
+├── validation/      ← 형식 검증
 ├── auth/            ← 인증 관련 (토큰, 현재 사용자)
 └── api/             ← HTTP 클라이언트
 ```
@@ -689,7 +697,8 @@ src/
 └── shared/
     ├── api/              ← HTTP 클라이언트, 공통 request 설정
     ├── ui/               ← Button, Modal 등 도메인 무관한 컴포넌트
-    └── lib/              ← formatDate, validate 등 순수 유틸
+    ├── format/           ← formatDate, formatCurrency
+    └── validation/       ← isValidEmailFormat 등 형식 검증
 ```
 
 ### 변환의 핵심 원칙
@@ -708,7 +717,7 @@ src/
 - `services/authService.ts` → `features/auth/api/` (auth 도메인, 백엔드 통신 목적)
 - `store/authSlice.ts` → `features/auth/model/` (auth 도메인, 상태 관리 목적)
 - `types/User.ts` → `entities/user/model/` (User 도메인 모델, 데이터 정의 목적)
-- `utils/formatDate.ts` → `shared/lib/date/` (목적이 UI인지 로깅인지 단정 불가 → 도메인 무관 유틸)
+- `utils/formatDate.ts` → `shared/format/` (포맷팅이라는 책임이 명확한 도메인 무관 유틸)
 
 ---
 

@@ -19,17 +19,21 @@ shared    ┘
 - 비즈니스 로직 없는 범용 코드
 - 슬라이스 없음 → 세그먼트 직접 배치
 - 내부 파일들끼리 자유롭게 import 가능
-- **포함**: API 클라이언트, UI 킷, 내부 라이브러리, env 설정, i18n 설정
+- **포함**: API 클라이언트, UI 킷, env 설정, i18n 설정, 도메인 무관 유틸 (포맷팅·검증·저장 등 목적이 드러나는 세그먼트로 분리)
 
 ```
 shared/
-├── api/      # API 클라이언트, 공통 request 함수
-├── ui/       # 디자인 시스템, 공통 컴포넌트
-├── lib/      # dates, colors 등 도메인별 내부 라이브러리
-├── config/   # 환경 변수, 글로벌 feature flag
-├── routes/   # 라우트 상수
-└── i18n/     # 번역 설정
+├── api/         # API 클라이언트, 공통 request 함수
+├── ui/          # 디자인 시스템, 공통 컴포넌트
+├── config/      # 환경 변수, 글로벌 feature flag
+├── routes/      # 라우트 상수
+├── i18n/        # 번역 설정
+├── format/      # formatDate, formatCurrency
+├── validation/  # isValidEmailFormat 등 형식 검증
+└── storage/     # localStorage, cookieStorage
 ```
+
+세그먼트 이름은 *무엇을 하는가*를 드러내야 한다. `lib`, `utils`, `helpers` 같은 catch-all 이름은 쓰지 않는다.
 
 ### entities/
 - 비즈니스 도메인 모델 (User, Post, Order 등)

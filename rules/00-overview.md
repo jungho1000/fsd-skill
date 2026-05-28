@@ -22,7 +22,7 @@ shared    ← 프레임워크 무관 공통 코드
 |------|------|------|
 | 1st | Layer | 책임 범위에 따른 최상위 분리 |
 | 2nd | Slice | 비즈니스 도메인에 따른 분리 |
-| 3rd | Segment | 기술적 목적에 따른 분리 (`ui`, `api`, `model`, `lib`, `config`) |
+| 3rd | Segment | 기술적 목적에 따른 분리 (`ui`, `api`, `model`, `config` + 목적이 드러나는 커스텀 세그먼트) |
 
 ## "어디에 넣을까?" 의사결정 트리
 
@@ -30,10 +30,10 @@ shared    ← 프레임워크 무관 공통 코드
 
 **Step 1: 비즈니스 로직 없는 인프라인가?**
 - UI 컴포넌트 키트 → `shared/ui/`
-- 유틸 함수 (formatDate, debounce) → `shared/lib/`
 - API 클라이언트, CRUD 함수 → `shared/api/`
 - 인증 토큰, 세션 → `shared/auth/`
 - 환경 변수, 설정값 → `shared/config/`
+- 도메인 무관 유틸 → 목적이 드러나는 커스텀 세그먼트 (`shared/format/`, `shared/validation/`, `shared/storage/` 등)
 
 **Step 2: 앱 전역 초기화 코드인가?**
 - 라우터, 글로벌 프로바이더, 글로벌 스타일 → `app/`
@@ -56,7 +56,7 @@ shared    ← 프레임워크 무관 공통 코드
 1. **레이어 import 규칙**: 상위 레이어는 하위를 import할 수 있지만, 하위 레이어는 상위를 import 불가
 2. **슬라이스 독립성**: 같은 레이어의 슬라이스끼리 직접 import 불가 (entities의 @x 제외)
 3. **Public API 규칙**: 슬라이스 외부에서는 `index.ts`만 참조, 내부 파일 직접 접근 불가
-4. **세그먼트 이름**: 목적을 기술해야 함. `components`, `hooks`, `types`는 금지
+4. **세그먼트 이름**: 목적을 기술해야 함. `components`, `hooks`, `types`, `utils`, `helpers`, `lib`는 금지
 
 ## 레이어별 특수 규칙
 
