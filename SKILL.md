@@ -2,35 +2,45 @@
 name: fsd
 description: Feature-Sliced Design architectural guidance for development decisions — layer selection, file placement, import rules, and FSD compliance review. Triggers on "FSD 적용해줘", "어느 레이어에 넣어야해?", "FSD 확인해줘", "FSD 리뷰해줘".
 argument-hint: "[question, file path, or code context]"
-compatible-with: cursor, claude-code
-skill-dir: ~/.ai-agent/skills/fsd
 ---
 
 # Feature-Sliced Design Advisor
 
 FSD 아키텍처 가이드 — 코드 배치, 구조 설계, 규칙 준수 여부 판단.
 
-**Arg:** `$ARGUMENTS` (질문, 파일 경로, 또는 코드 컨텍스트)  
+**Arg:** `$ARGUMENTS` (질문, 파일 경로, 또는 코드 컨텍스트)
 **Language:** 모든 사용자 메시지는 한국어로.
 
 ---
 
 ## Step 1: 질문 분류
 
-`$ARGUMENTS`를 보고 해당하는 FSD 관심사를 파악하라.  
+`$ARGUMENTS`를 보고 해당하는 FSD 관심사를 파악하라.
 아래 매핑 테이블로 어떤 룰 파일을 읽을지 결정한다.
 
 | 관심사 | 트리거 키워드 | 로드할 룰 파일 |
 |--------|-------------|--------------|
-| 레이어 선택 | "어디에", "어느 레이어", "layer", "배치" | `rules/01-layers.md` |
-| 슬라이스·세그먼트·매퍼 | "슬라이스", "세그먼트", "slice", "segment", "폴더 구조", "mapper", "DTO" | `rules/02-slices-segments.md` |
-| Public API / index | "index.ts", "export", "공개 API", "import 경로", "배럴" | `rules/03-public-api.md` |
-| Cross-import | "같은 레이어", "cross-import", "import 오류", "순환 참조" | `rules/04-cross-imports.md` |
-| Entities 설계 | "entities", "엔티티", "과도한", "CRUD" | `rules/05-entities.md` |
-| TanStack Query | "useQuery", "useMutation", "queryKey", "react-query", "tanstack" | `rules/06-tanstack-query.md` |
-| 전반적 개요 | (분류 불가 또는 광범위한 질문) | `rules/00-overview.md` |
+| 레이어 선택 | "어디에", "어느 레이어", "layer", "배치" | `rules/layers.md` |
+| 슬라이스 식별·그룹핑·크기 | "슬라이스", "slice", "도메인 분리", "그룹핑" | `rules/slices.md` |
+| 세그먼트·매퍼·DTO·폴더 구조 | "세그먼트", "segment", "ui", "model", "api", "mapper", "DTO", "폴더 구조" | `rules/segments.md` |
+| Public API / index | "index.ts", "export", "공개 API", "import 경로", "배럴" | `rules/public-api.md` |
+| Cross-import | "같은 레이어", "cross-import", "import 오류", "순환 참조" | `rules/cross-imports.md` |
+| Entities 설계 | "entities", "엔티티", "과도한", "CRUD", "단일 엔티티" | `rules/entities.md` |
+| TanStack Query | "useQuery", "useMutation", "queryKey", "react-query", "tanstack" | `rules/tanstack-query.md` |
+| 전반적 개요 | (분류 불가 또는 광범위한 질문) | `rules/overview.md` |
 
-> 질문이 모호하면 `rules/00-overview.md`를 먼저 읽어 컨텍스트를 파악한 뒤 추가 파일을 로드한다.
+> 질문이 모호하면 `rules/overview.md`를 먼저 읽어 컨텍스트를 파악한 뒤 추가 파일을 로드한다.
+
+각 룰 파일의 끝에는 `## Relations` 섹션이 있다. 그 안의 `predicate :: [[다른-룰]]` 항목을 따라 *다음에 읽을 룰*을 결정하라. predicate 어휘:
+
+| Predicate | 의미 |
+|-----------|------|
+| `defines` / `defined-by` | 어떤 룰이 다른 룰에서 쓰는 용어를 정의 |
+| `depends-on` / `required-by` | 읽기 선행 의존 (먼저 읽어야 이해됨) |
+| `extends` / `extended-by` | 적용 범위·세부를 확장 |
+| `applies-to` / `applied-by` | 한 룰이 다른 영역의 코드에 적용됨 |
+| `part-of` / `has-part` | 구성 관계 |
+| `see-also` | 약한 연관 |
 
 ---
 
@@ -41,6 +51,7 @@ Read 툴로 매핑된 파일을 읽는다:
 - 경로: `~/.ai-agent/skills/fsd/rules/`
 - **1~3개 파일**만 로드 (과도한 정보 방지)
 - 여러 관심사가 겹치면 모두 로드
+- 룰 파일을 읽은 뒤 `## Relations` 섹션의 링크를 따라가 *질문에 답하기 위해 추가로 필요한 룰*만 선택적으로 더 로드
 
 ---
 
@@ -73,9 +84,32 @@ src/
 ├── app/        # 라우터, 글로벌 스타일, 프로바이더
 ├── pages/      # 페이지 단위 슬라이스
 ├── widgets/    # 재사용 대형 UI 블록
-├── features/   # 재사용 비즈니스 기능
-├── entities/   # 비즈니스 엔티티 (도메인 모델)
+├── features/   # 유즈케이스/시나리오 (여러 엔티티 조합·사용자 액션 흐름)
+├── entities/   # 단일 도메인 엔티티
 └── shared/     # 프레임워크 무관 공통 코드
 ```
 
 **핵심 규칙:** 하위 레이어는 상위 레이어를 import할 수 없다. 같은 레이어의 슬라이스끼리 직접 import할 수 없다.
+
+## 개념 그래프
+
+룰 간 관계(에이전트 navigation surface):
+
+```
+                  overview
+                 ↙   ↓   ↘
+            layers  slices  segments
+              │     ↕  │       ↑
+              │     │  └── public-api
+              │     │       │
+              │     └── cross-imports
+              ↓                ↑
+          entities ←──── tanstack-query
+                         (model 확장)
+```
+
+- `overview` 가 모든 룰을 정의 (defines)
+- `layers` 가 슬라이스의 컨테이너, `slices` 가 세그먼트의 컨테이너
+- `public-api` 와 `cross-imports` 는 슬라이스 경계를 다룸
+- `entities` 와 `tanstack-query` 는 특정 영역 심화
+- 각 파일의 `## Relations` 섹션에서 정확한 predicate를 확인

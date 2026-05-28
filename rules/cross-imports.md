@@ -1,3 +1,10 @@
+---
+domain: fsd
+topic: cross-imports
+triggers: [cross-import, 같은 레이어, 순환 참조, import 오류, "@x", 슬라이스 간 import]
+status: published
+---
+
 # FSD Cross-import 규칙
 
 ## Cross-import이란?
@@ -135,4 +142,12 @@ cross-import를 허용한다면:
 ## entities의 @x 노테이션
 
 entities 레이어에서 불가피한 cross-import에는 `@x` 사용 (최후 수단).  
-사용 방법과 구조는 `rules/03-public-api.md` 참조.
+사용 방법과 구조는 `rules/public-api.md` 참조.
+
+## Relations
+
+- depends-on :: [[layers]]
+- depends-on :: [[slices]]
+- depends-on :: [[public-api]]
+- applies-to :: [[slices]]
+- see-also :: [[entities]]

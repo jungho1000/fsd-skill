@@ -164,7 +164,7 @@ Button 컴포넌트, HTTP 클라이언트, formatDate 유틸, env 설정.
 **entities** — "단일 도메인 엔티티"  
 User, Product, Order, Comment. 도메인 모델은 속성·액션·인스턴스 hydration을 책임진다.  
 두 곳 이상에서 반복 사용되고 *그리고* DTO 변환·파생 데이터·도메인 액션 중 하나라도 있을 때만 추출한다.  
-DTO를 그대로 렌더링하기만 한다면 `shared/api/`에서 re-export로 처리한다 (자세한 가이드는 `rules/05-entities.md`).
+DTO를 그대로 렌더링하기만 한다면 `shared/api/`에서 re-export로 처리한다 (자세한 가이드는 `rules/entities.md`).
 
 **features** — "유즈케이스 / 시나리오"  
 결제 흐름, 댓글 작성·수정·삭제, 장바구니 담기. 여러 엔티티를 오케스트레이션하거나 사용자 액션 흐름을 담는다.  

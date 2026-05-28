@@ -1,3 +1,10 @@
+---
+domain: fsd
+topic: overview
+triggers: [FSD, 개요, 계층, 레이어 계층, 의사결정 트리, 어디에 넣을까]
+status: published
+---
+
 # FSD 개요 — Feature-Sliced Design
 
 ## 핵심 개념
@@ -70,3 +77,13 @@ shared    ← 프레임워크 무관 공통 코드
 1. App, Shared 레이어부터 기반 구축
 2. 기존 코드를 Widgets/Pages 로 큰 단위 이동
 3. import 규칙 위반 점진적 해소 + Entities/Features 추출
+
+## Relations
+
+- defines :: [[layers]]
+- defines :: [[slices]]
+- defines :: [[segments]]
+- defines :: [[public-api]]
+- extended-by :: [[entities]]
+- extended-by :: [[tanstack-query]]
+- see-also :: [[cross-imports]]

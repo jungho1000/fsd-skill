@@ -1,3 +1,10 @@
+---
+domain: fsd
+topic: tanstack-query
+triggers: [useQuery, useMutation, queryKey, react-query, tanstack, queryOptions, thin client, thick client, query factory, 낙관적 업데이트]
+status: published
+---
+
 # FSD + TanStack Query 규칙
 
 ## 핵심 원칙: TanStack Query는 model 계층
@@ -49,7 +56,7 @@ export const productQueries = {
 
 > **슬라이스 위치 선택**  
 > 위 예시는 `features/product/`에 product query를 두지만, 이는 *한 슬라이스 한정* 사용을 가정한 시연이다.  
-> 단일 도메인 엔티티이고 두 곳 이상에서 반복 사용된다면 `entities/product/`로 끌어올린다 (자세한 추출 조건은 `rules/05-entities.md` 참고).  
+> 단일 도메인 엔티티이고 두 곳 이상에서 반복 사용된다면 `entities/product/`로 끌어올린다 (자세한 추출 조건은 `rules/entities.md` 참고).  
 > 여러 엔티티를 조합하는 유즈케이스 단위 query라면 그대로 `features/<유즈케이스>/`에 둔다.
 
 **판단 기준**: "백엔드 응답 구조와 내가 코드에서 다루고 싶은 데이터 구조가 다른가?"
@@ -356,3 +363,12 @@ export const SuspenseProvider = ({ children }: { children: ReactNode }) => (
 | `setQueryData` 인자 타입 | 도메인 모델 | 캐시와 동일한 타입 |
 | `QueryClient` 전역 설정 | `app/providers/` | 앱 전역 초기화 |
 | Suspense 경계 | `app/providers/` | 앱 전역 초기화 |
+
+## Relations
+
+- extends :: [[segments]]
+- depends-on :: [[segments]]
+- depends-on :: [[slices]]
+- applies-to :: [[entities]]
+- applies-to :: [[slices]]
+- see-also :: [[overview]]

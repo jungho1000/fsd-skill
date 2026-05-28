@@ -1,3 +1,10 @@
+---
+domain: fsd
+topic: layers
+triggers: [layer, 레이어, app, pages, widgets, features, entities, shared, 배치, 어디에]
+status: published
+---
+
 # FSD 레이어 규칙
 
 ## 레이어 계층과 Import 규칙
@@ -45,7 +52,7 @@ shared/
 1. 두 곳 이상에서 반복 사용
 2. DTO 변환·파생 데이터 구성·도메인 메서드 중 하나라도 존재
 
-DTO를 그대로 렌더링하기만 한다면(=변환이 없다면) entities로 끌어올리지 않고 `shared/api/`에서 re-export로 의미 있는 이름만 부여한다. 자세한 가이드는 `rules/05-entities.md`.
+DTO를 그대로 렌더링하기만 한다면(=변환이 없다면) entities로 끌어올리지 않고 `shared/api/`에서 re-export로 의미 있는 이름만 부여한다. 자세한 가이드는 `rules/entities.md`.
 
 - **포함**: 단일 엔티티 CRUD query/mutation·도메인 타입·mapper(model), 단일 엔티티 fetch 함수·DTO(api), 도메인 props만 받는 표현 UI(ui)
 
@@ -107,3 +114,12 @@ app/
 | 한 페이지에서만 쓰는 사이드바 | widgets/sidebar | pages/{page}/ui/Sidebar |
 | 로그인 요청 함수 | entities/user/api | shared/api 또는 pages/login/api |
 | 앱 전체 설정값 | entities/config | shared/config 또는 app/ |
+
+## Relations
+
+- defined-by :: [[overview]]
+- applies-to :: [[slices]]
+- required-by :: [[slices]]
+- required-by :: [[entities]]
+- required-by :: [[cross-imports]]
+- see-also :: [[public-api]]

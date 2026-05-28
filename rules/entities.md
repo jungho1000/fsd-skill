@@ -1,3 +1,10 @@
+---
+domain: fsd
+topic: entities
+triggers: [entities, 엔티티, 도메인 모델, CRUD, 단일 엔티티, 도메인 액션, hydration, 추출 조건]
+status: published
+---
+
 # FSD Entities 레이어 설계 규칙
 
 ## 주의사항
@@ -71,7 +78,7 @@ shared/
         └── stats.ts      # 통계 데이터
 ```
 
-이름만 어색하다면 `shared/api/`에서 re-export로 의미 있는 이름을 부여한다(자세한 매트릭스는 `rules/02-slices-segments.md`의 "API 응답 타입 처리" 참고).
+이름만 어색하다면 `shared/api/`에서 re-export로 의미 있는 이름을 부여한다(자세한 매트릭스는 `rules/segments.md`의 "API 응답 타입 처리" 참고).
 
 ```ts
 // shared/api/product.ts
@@ -96,7 +103,7 @@ shared/
 ```
 
 **왜?** entities의 user를 shared/api가 참조하면 레이어 import 규칙 위반.  
-인증 로직 상세는 `rules/01-layers.md`의 shared 섹션 참조.
+인증 로직 상세는 `rules/layers.md`의 shared 섹션 참조.
 
 ## 6. Cross-import 최소화
 
@@ -122,3 +129,12 @@ entities/
 - [ ] DTO 변환·파생 데이터·도메인 액션 중 하나라도 있는가?
 - [ ] 단일 엔티티의 책임에 머무는가? (여러 엔티티 조합이면 features로)
 - [ ] @x 사용 전 슬라이스 병합을 먼저 고려했는가?
+
+## Relations
+
+- extends :: [[layers]]
+- depends-on :: [[layers]]
+- depends-on :: [[slices]]
+- depends-on :: [[segments]]
+- see-also :: [[tanstack-query]]
+- see-also :: [[cross-imports]]
