@@ -69,23 +69,7 @@ entities/
 
 ## 4. DTO를 그대로 쓴다면 shared/api/
 
-DTO를 변환 없이 렌더링만 하는 경우는 *도메인 모델*이 아니다. entities에 끌어올리지 않는다.
-
-```
-# ✅ 변환 없는 데이터는 shared/api/
-shared/
-└── api/
-    └── endpoints/
-        ├── report.ts     # 보고서 — 단발성 데이터
-        └── stats.ts      # 통계 데이터
-```
-
-이름만 어색하다면 `shared/api/`에서 re-export로 의미 있는 이름을 부여한다(자세한 매트릭스는 `rules/segments.md`의 "API 응답 타입 처리" 참고).
-
-```ts
-// shared/api/product.ts
-export type { GetProductResponse as ProductDTO } from 'api-client-package';
-```
+DTO를 변환 없이 렌더링만 하는 경우는 *도메인 모델*이 아니다. entities로 끌어올리지 않는다. 처리 방법 매트릭스(re-export / 정규화 매퍼 / 도메인 매퍼)는 → [[segments]] "API 응답 타입 처리" 절.
 
 *얇은 entities re-export* 슬라이스는 만들지 않는다 — entities는 모두 *진짜 도메인 모델*이라는 보증을 유지한다.
 

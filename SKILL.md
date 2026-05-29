@@ -22,11 +22,11 @@ FSD 아키텍처 가이드 — 코드 배치, 구조 설계, 규칙 준수 여�
 |--------|-------------|--------------|
 | 레이어 선택 | "어디에", "어느 레이어", "layer", "배치" | `rules/layers.md` |
 | 슬라이스 식별·그룹핑·크기 | "슬라이스", "slice", "도메인 분리", "그룹핑" | `rules/slices.md` |
-| 세그먼트 하드 룰 (자유·단방향·금지 이름) | "세그먼트 규칙", "필수 세그먼트", "ui model api 필수", "단방향", "세그먼트 자유" | `rules/segment-rules.md` |
+| 세그먼트 하드 룰 (자유·단방향·금지 이름) | "세그먼트 규칙", "필수 세그먼트", "ui/model/api 필수냐", "단방향", "세그먼트 이름 자유" | `rules/segment-rules.md` |
 | 세그먼트 권장 패턴·매퍼·DTO·폴더 구조 | "세그먼트", "segment", "ui", "model", "api", "mapper", "DTO", "tier", "폴더 구조" | `rules/segments.md` |
 | Public API / index | "index.ts", "export", "공개 API", "import 경로", "배럴" | `rules/public-api.md` |
-| Cross-import | "같은 레이어", "cross-import", "import 오류", "순환 참조" | `rules/cross-imports.md` |
-| Entities 설계 | "entities", "엔티티", "과도한", "CRUD", "단일 엔티티" | `rules/entities.md` |
+| Cross-import | "같은 레이어 import", "cross-import", "슬라이스 간 import", "순환 참조" | `rules/cross-imports.md` |
+| Entities 설계 | "entities", "엔티티", "과도한 entities", "도메인 모델 추출", "단일 엔티티" | `rules/entities.md` |
 | TanStack Query | "useQuery", "useMutation", "queryKey", "react-query", "tanstack" | `rules/tanstack-query.md` |
 | 전반적 개요 | (분류 불가 또는 광범위한 질문) | `rules/overview.md` |
 
@@ -52,9 +52,9 @@ FSD 아키텍처 가이드 — 코드 배치, 구조 설계, 규칙 준수 여�
 Read 툴로 매핑된 파일을 읽는다:
 
 - 경로: `~/.ai-agent/skills/fsd/rules/`
-- **1~3개 파일**만 로드 (과도한 정보 방지)
+- **초기에는 1~3개** 파일만 로드 (과도한 정보 방지)
 - 여러 관심사가 겹치면 모두 로드
-- 룰 파일을 읽은 뒤 `## Relations` 섹션의 링크를 따라가 *질문에 답하기 위해 추가로 필요한 룰*만 선택적으로 더 로드
+- 로드 후 `## Relations` 섹션의 링크를 따라 *질문에 답하기 위해 추가로 필요한 룰*만 선택적으로 더 로드 (초기 1~3개 제한은 *시작점*에 대한 것이며, Relations 확장은 제한에서 제외)
 
 ---
 
@@ -71,15 +71,13 @@ Read 툴로 매핑된 파일을 읽는다:
 
 기존 코드 구조를 검토할 때 아래 항목을 확인한다:
 
-- [ ] 레이어 순서 준수 (app → pages → widgets → features → entities → shared)
-- [ ] 상위 레이어 import 없음 (하위 레이어는 상위를 참조 불가)
-- [ ] 같은 레이어 간 cross-import 없음 (entities의 @x 제외)
+- [ ] 레이어 import 방향 준수 (위 레이어만 아래 레이어를 import — 역방향 금지)
+- [ ] 하위 → 상위 레이어 import 없음
+- [ ] 같은 레이어 슬라이스끼리 직접 import 없음 (entities의 `@x` 예외)
 - [ ] Public API가 `index.ts`로 노출됨
-- [ ] 세그먼트 이름이 목적을 기술함 (`components`, `hooks`, `types`, `utils`, `helpers`, `lib`는 금지)
+- [ ] 세그먼트 이름이 금지 목록(`components`, `hooks`, `types`, `utils`, `helpers`, `lib`)에 해당하지 않음
 - [ ] 슬라이스 안에서 세그먼트 간 사이클 없음 (단방향 의존성)
 - [ ] Shared/App 레이어는 슬라이스 없이 세그먼트 직접 배치
-
-> 세그먼트 이름 자체(`ui/model/api` 사용 여부 등)는 *체크 대상이 아니다* — 자유. 하드 룰은 [[rules/segment-rules.md]] 참고.
 
 ---
 
@@ -88,35 +86,27 @@ Read 툴로 매핑된 파일을 읽는다:
 ```
 src/
 ├── app/        # 라우터, 글로벌 스타일, 프로바이더
-├── pages/      # 페이지 단위 슬라이스
+├── pages/      # 페이지/화면 슬라이스 (1:1 매핑 강제 아님 — 비슷한 페이지는 한 슬라이스로 묶을 수 있음)
 ├── widgets/    # 재사용 대형 UI 블록
 ├── features/   # 유즈케이스/시나리오 (여러 엔티티 조합·사용자 액션 흐름)
 ├── entities/   # 단일 도메인 엔티티
 └── shared/     # 프레임워크 무관 공통 코드
 ```
 
-**핵심 규칙:** 하위 레이어는 상위 레이어를 import할 수 없다. 같은 레이어의 슬라이스끼리 직접 import할 수 없다.
+**핵심 규칙:** 하위 레이어는 상위 레이어를 import할 수 없다. 같은 레이어의 슬라이스끼리 직접 import할 수 없다 (entities의 `@x` 예외 — `rules/cross-imports.md`).
 
-## 개념 그래프
+각 룰 간 정확한 관계는 룰 파일의 `## Relations` 섹션을 따른다.
 
-룰 간 관계(에이전트 navigation surface):
+---
 
-```
-                  overview
-                 ↙   ↓   ↘
-            layers  slices  segment-rules (하드 룰)
-              │     ↕  │        ↑
-              │     │  └── segments (권장 패턴) ─── public-api
-              │     │       │
-              │     └── cross-imports
-              ↓                ↑
-          entities ←──── tanstack-query
-                         (model 확장)
-```
+## 룰에 없는 질문을 받으면
 
-- `overview` 가 모든 룰을 정의 (defines)
-- `layers` 가 슬라이스의 컨테이너, `slices` 가 세그먼트의 컨테이너
-- `segment-rules` 는 세그먼트의 *하드 룰*(자유·단방향·금지 이름), `segments` 는 *권장 패턴*(`ui/model/api`, tier, 매퍼 위치 등)
-- `public-api` 와 `cross-imports` 는 슬라이스 경계를 다룸
-- `entities` 와 `tanstack-query` 는 특정 영역 심화
-- 각 파일의 `## Relations` 섹션에서 정확한 predicate를 확인
+매핑 테이블·Relations 어디에도 닿지 않는 영역의 질문이라면:
+
+1. **직접 추론으로 답하지 않는다.** 룰셋 외 답변은 스킬의 보증 범위를 벗어남.
+2. 사용자에게 *룰셋에 없는 영역*임을 먼저 알린다.
+3. 사용자가 명시적으로 요청한 경우에만 https://fsd.how 를 `WebFetch` 로 조회한다.
+4. 조회 결과로 답한 뒤, 룰셋에 추가가 필요해 보이면 **변경 제안 리포트**만 제시한다 (어떤 룰 파일에 어떤 단락을 추가/수정할지).
+5. 파일 수정·커밋·PR 작성은 사용자 명시 승인 후에만.
+
+> 자동 sync·자동 PR 금지. 룰셋은 팀이 합의한 hard rule + 권장 패턴이므로, 외부 문서 변경이 곧바로 룰이 되어서는 안 된다.

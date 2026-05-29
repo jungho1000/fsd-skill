@@ -35,6 +35,7 @@ shared/
 ├── config/      # 환경 변수, 글로벌 feature flag
 ├── routes/      # 라우트 상수
 ├── i18n/        # 번역 설정
+├── auth/        # 토큰 관리, 현재 사용자 정보
 ├── format/      # formatDate, formatCurrency
 ├── validation/  # isValidEmailFormat 등 형식 검증
 └── storage/     # localStorage, cookieStorage
@@ -44,30 +45,8 @@ shared/
 
 ### entities/
 - **단일** 비즈니스 도메인 엔티티 (User, Post, Order 등)
-- 도메인 모델의 책임: 속성·액션·인스턴스 hydration(DTO → 도메인 모델 변환)
 - 비즈니스가 사용하는 용어 = 슬라이스 이름
-
-**추출 조건 — 둘 다 충족해야 함**
-
-1. 두 곳 이상에서 반복 사용
-2. DTO 변환·파생 데이터 구성·도메인 메서드 중 하나라도 존재
-
-DTO를 그대로 렌더링하기만 한다면(=변환이 없다면) entities로 끌어올리지 않고 `shared/api/`에서 re-export로 의미 있는 이름만 부여한다. 자세한 가이드는 `rules/entities.md`.
-
-- **포함**: 단일 엔티티 CRUD query/mutation·도메인 타입·mapper(model), 단일 엔티티 fetch 함수·DTO(api), 도메인 props만 받는 표현 UI(ui)
-
-아래는 `ui/model/api` 패턴을 따를 때의 *예시*다. 세그먼트 구성은 자유 — 하드 룰은 [[segment-rules]].
-
-```
-entities/
-├── user/
-│   ├── model/    # User 타입, 도메인 액션, useUserQuery
-│   ├── api/      # fetchUser, updateUser (DTO)
-│   ├── ui/       # UserCard, UserAvatar (도메인 props만)
-│   └── index.ts  # Public API
-└── product/
-    └── ...
-```
+- 추출 조건·DTO 처리·세그먼트 구성 예시 → [[entities]]
 
 ### features/
 - **유즈케이스 / 시나리오** — 여러 엔티티를 오케스트레이션하거나 사용자 액션 흐름을 담는 슬라이스

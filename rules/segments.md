@@ -50,7 +50,7 @@ ui  →  model  →  api
 | `model` | 데이터·상태를 다루는 것 | 도메인 모델 타입, 스토어, 비즈니스 로직, 검증, **매퍼** |
 | `config` | 설정·플래그 | 설정값, feature flag |
 
-이외에 커스텀 세그먼트를 자유롭게 추가할 수 있다. 단, 이름은 *무엇을 하는가*를 드러내야 한다 (`components`, `hooks`, `types`, `utils`, `helpers`, `lib` 같은 *기술 타입* 명칭 금지 — `→ 세그먼트 이름 규칙` 참고).
+이외에 커스텀 세그먼트를 자유롭게 추가할 수 있다. 단, 이름은 *무엇을 하는가*를 드러내야 한다 (이름 규칙·금지 목록은 → `세그먼트 이름 규칙` 절).
 
 ### API 응답 타입 처리
 
@@ -288,20 +288,9 @@ features/order/
 
 모든 레이어에서 커스텀 세그먼트를 자유롭게 만들 수 있다. 단, 이름은 *무엇을 하는가*를 드러내야 한다.
 
-```
-shared/
-├── api/
-├── ui/
-├── config/
-├── routes/      ← 라우팅
-├── i18n/        ← 국제화
-├── auth/        ← 토큰 관리
-├── format/      ← 포맷팅 (formatDate, formatCurrency)
-├── validation/  ← 형식 검증 (isValidEmailFormat)
-└── storage/     ← 영속 저장 (localStorage, cookieStorage)
-```
+`shared/`의 커스텀 세그먼트 예시 트리는 → [[layers]] `shared/` 섹션.
 
-**금지되는 이름**: `components`, `hooks`, `types`, `utils`, `helpers`, `lib` — *기술 타입* 명칭은 안에 무엇이 있는지 알려주지 않는다.
+이름 규칙·금지 목록은 위 `세그먼트 이름 규칙` 절 참고.
 
 새 파일이 들어올 때 "이건 무엇을 위한 것인가?"를 물어 적절한 세그먼트로 보낸다. 진짜로 단발성이라 카테고리가 어색하면 *해당 사용처 슬라이스 안*에 둔다 — shared 루트에 catch-all 세그먼트는 만들지 않는다.
 
