@@ -1,0 +1,90 @@
+---
+domain: fsd
+topic: overview
+triggers: [FSD, 개요, 계층, 레이어 계층, 의사결정 트리, 어디에 넣을까]
+status: published
+---
+
+# FSD 개요 — Feature-Sliced Design
+
+## 핵심 개념
+
+FSD는 프론트엔드 앱을 **책임 범위**와 **의존성 방향**에 따라 계층적으로 분리하는 아키텍처 방법론이다.
+
+```
+레이어 계층 (상 → 하)
+━━━━━━━━━━━━━━━━━━━
+app       ← 전체 앱 초기화
+pages     ← 페이지/화면
+widgets   ← 독립적 대형 UI 블록
+features  ← 재사용 비즈니스 기능
+entities  ← 비즈니스 도메인 모델
+shared    ← 프레임워크 무관 공통 코드
+━━━━━━━━━━━━━━━━━━━
+```
+
+## 3계층 계층 구조
+
+| 레벨 | 이름 | 역할 |
+|------|------|------|
+| 1st | Layer | 책임 범위에 따른 최상위 분리 |
+| 2nd | Slice | 비즈니스 도메인에 따른 분리 |
+| 3rd | Segment | 기술적 목적에 따른 분리. 이름은 자유 — `ui`, `api`, `model`, `config`가 흔히 쓰이지만 *필수는 아니다*. 목적을 드러내는 커스텀 세그먼트 추가 가능. 하드 룰은 [[segment-rules]]. |
+
+## "어디에 넣을까?" 의사결정 트리
+
+새 코드를 작성할 때 아래 단계를 순서대로 따른다.
+
+**Step 1: 비즈니스 로직 없는 인프라인가?**
+- UI 컴포넌트 키트 → `shared/ui/`
+- API 클라이언트, CRUD 함수 → `shared/api/`
+- 인증 토큰, 세션 → `shared/auth/`
+- 환경 변수, 설정값 → `shared/config/`
+- 도메인 무관 유틸 → 목적이 드러나는 커스텀 세그먼트 (`shared/format/`, `shared/validation/`, `shared/storage/` 등)
+
+**Step 2: 앱 전역 초기화 코드인가?**
+- 라우터, 글로벌 프로바이더, 글로벌 스타일 → `app/`
+
+**Step 3: 한 페이지에서만 쓰이는가?**
+- Yes → 그 `pages/` 슬라이스 안에 (추출하지 않아도 됨)
+- 비슷한 페이지(로그인/회원가입 등)는 하나의 `pages/` 슬라이스로 묶을 수 있음
+
+**Step 4: 두 곳 이상에서 반복되는 유즈케이스/시나리오인가?** (여러 엔티티 오케스트레이션, 사용자 액션 흐름)
+- Yes, 경계가 안정적 → `features/`
+- 불확실 → `pages/`에 유지, 중복 허용
+
+**Step 5: 두 곳 이상에서 반복되는 단일 도메인 엔티티이고, DTO 변환·파생 데이터·도메인 메서드 중 하나라도 있는가?**
+- Yes, 둘 다 충족 → `entities/`
+- 반복은 있으나 변환 없음 → `shared/api/`에서 re-export로 의미 있는 이름 부여
+- 변환은 있으나 한 슬라이스 한정 → 현재 슬라이스 안에 유지 (도메인 모델을 둔 세그먼트 — 흔히 `model/`)
+
+**황금 규칙**: 의심스러우면 `pages/`에 유지. 실제로 여러 곳에서 사용되고 경계가 명확해질 때만 추출한다.
+
+## 규칙 요약
+
+1. **레이어 import 규칙**: 상위 레이어는 하위를 import할 수 있지만, 하위 레이어는 상위를 import 불가
+2. **슬라이스 독립성**: 같은 레이어의 슬라이스끼리 직접 import 불가 (entities의 @x 제외)
+3. **Public API 규칙**: 슬라이스 외부에서는 `index.ts`만 참조, 내부 파일 직접 접근 불가
+4. **세그먼트 이름**: 목적을 기술해야 함. `components`, `hooks`, `types`, `utils`, `helpers`, `lib`는 금지. `ui/model/api`는 필수가 아니며 이름·구성은 자유 — 자세한 하드 룰은 [[segment-rules]]
+
+## 레이어별 특수 규칙
+
+- **App, Shared**: 슬라이스 없음, 세그먼트 직접 사용
+- **나머지 레이어**: `레이어/슬라이스/세그먼트` 구조 필수
+
+## 점진적 도입 전략
+
+1. App, Shared 레이어부터 기반 구축
+2. 기존 코드를 Widgets/Pages 로 큰 단위 이동
+3. import 규칙 위반 점진적 해소 + Entities/Features 추출
+
+## Relations
+
+- defines :: [[layers]]
+- defines :: [[slices]]
+- defines :: [[segments]]
+- defines :: [[segment-rules]]
+- defines :: [[public-api]]
+- extended-by :: [[entities]]
+- extended-by :: [[tanstack-query]]
+- see-also :: [[cross-imports]]
