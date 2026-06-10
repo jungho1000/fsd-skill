@@ -24,6 +24,7 @@ FSD 아키텍처 가이드 — 코드 배치, 구조 설계, 규칙 준수 여�
 | 슬라이스 식별·그룹핑·크기 | "슬라이스", "slice", "도메인 분리", "그룹핑" | `rules/slices.md` |
 | 세그먼트 하드 룰 (자유·단방향·금지 이름) | "세그먼트 규칙", "필수 세그먼트", "ui/model/api 필수냐", "단방향", "세그먼트 이름 자유" | `rules/segment-rules.md` |
 | 세그먼트 권장 패턴·매퍼·DTO·폴더 구조 | "세그먼트", "segment", "ui", "model", "api", "mapper", "DTO", "tier", "폴더 구조" | `rules/segments.md` |
+| 정적 리소스(이미지·SVG·폰트·아이콘) 배치 | "정적 리소스", "asset", "이미지", "아이콘", "SVG", "폰트", "public", "assets" | `rules/segments.md` |
 | Public API / index | "index.ts", "export", "공개 API", "import 경로", "배럴" | `rules/public-api.md` |
 | Cross-import | "같은 레이어 import", "cross-import", "슬라이스 간 import", "순환 참조" | `rules/cross-imports.md` |
 | Entities 설계 | "entities", "엔티티", "과도한 entities", "도메인 모델 추출", "단일 엔티티" | `rules/entities.md` |

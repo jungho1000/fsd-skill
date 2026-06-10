@@ -294,6 +294,33 @@ features/order/
 
 새 파일이 들어올 때 "이건 무엇을 위한 것인가?"를 물어 적절한 세그먼트로 보낸다. 진짜로 단발성이라 카테고리가 어색하면 *해당 사용처 슬라이스 안*에 둔다 — shared 루트에 catch-all 세그먼트는 만들지 않는다.
 
+### 정적 리소스 (이미지·SVG·폰트) 배치
+
+정적 리소스(이미지·SVG·아이콘·폰트 등)도 코드와 동일하게 **사용하는 곳 가까이** 둔다. `public/assets/` 같은 루트 덤프 폴더에 전부 모아두면 *어디서 쓰는지* 알기 어렵고, 슬라이스를 옮기거나 제거할 때 리소스가 고아로 남는다.
+
+판단 흐름 (= 공유 코드 분리 원칙과 동일):
+
+| 사용 범위 | 위치 |
+|---------|------|
+| 한 컴포넌트/한 슬라이스에서만 사용 | 해당 슬라이스 내 `assets/` 또는 `ui/` 옆 |
+| 한 슬라이스 내 여러 세그먼트가 공유 | 슬라이스 루트의 `assets/` 세그먼트 |
+| 여러 슬라이스가 공유 | `shared/assets/` (또는 `shared/icons/`, `shared/illustrations/`) |
+
+```
+# ❌ 루트 덤프 — 사용처를 모름
+public/assets/images/profile/delivery/img_ssoreder01.svg   # delivery 페이지 1곳에서만 씀
+public/assets/images/agency/img_agency_macau.png           # agency 페이지 1곳에서만 씀
+
+# ✅ 사용처 슬라이스로 colocate
+pages/profile-delivery/assets/img_ssoreder01.svg
+pages/profile-agency/assets/img_agency_macau.png
+shared/assets/img_FAQ.png                                  # 여러 페이지에서 공유
+```
+
+**Next.js `public/` 사용 기준**: 정적 URL로 *반드시 직접 서빙되어야 하는* 리소스만 둔다 (favicon, robots.txt, sitemap.xml, OG/메타 이미지 등). 컴포넌트에서 `import`로 쓰는 이미지는 슬라이스 안에 둬도 `next/image` + webpack 로더가 정상적으로 번들링한다.
+
+**세그먼트 이름**: `assets/`, `icons/`, `illustrations/`, `images/`처럼 *무엇을 담는지*를 드러내는 이름을 쓴다. `static/`, `files/`처럼 catch-all 이름은 피한다.
+
 ## Relations
 
 - defined-by :: [[overview]]
