@@ -25,6 +25,11 @@ status: published
    - 금지: `components`, `hooks`, `types`, `utils`, `helpers`, `lib`
    - 이유: *기술 타입* 명칭은 안에 무엇이 있는지 알려주지 않는다.
 
+4. **세그먼트에는 배럴 `index.ts`를 두지 않는다**
+   - `index.ts`(public API)는 *슬라이스*의 계약이다. 슬라이스 `index.ts`는 세그먼트 *파일*에서 직접 re-export한다.
+   - `app`·`shared`는 슬라이스가 없는 세그먼트-only 레이어이므로 슬라이스형 배럴 `index.ts`를 두지 않는다(`shared/ui/<component>/index.ts` 같은 *컴포넌트 폴더 단위* index는 예외).
+   - 자세히 → [[public-api]] "세그먼트에는 배럴 index.ts를 두지 않는다".
+
 ## 이 규칙이 답하지 않는 것
 
 - "그래서 어느 세그먼트에 둬야 하나요?" — [[segments]] 권장 패턴 (`ui/model/api`, tier 모델, 매퍼 위치 등)

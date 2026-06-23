@@ -30,6 +30,41 @@ import { LoginPage } from "@/pages/auth";
 import { LoginPage } from "@/pages/auth/ui/LoginPage";
 ```
 
+## 세그먼트에는 배럴 index.ts를 두지 않는다
+
+> **`index.ts`(배럴 public API)는 *슬라이스*의 계약이다. 세그먼트(`ui`/`model`/`api` 등)에는 배럴 `index.ts`를 두지 않는다.**
+
+슬라이스의 public API(`index.ts`)는 세그먼트 *파일*에서 **직접** re-export한다. 세그먼트 배럴(`./ui`, `./model`)을 경유하지 않는다.
+
+```ts
+// pages/auth/index.ts
+// ✅ 세그먼트 파일에서 직접 re-export
+export { LoginPage } from "./ui/login-page";
+export type { AuthUser } from "./model/auth-user";
+
+// ❌ 세그먼트 배럴(ui/index.ts, model/index.ts)을 만들고 그걸 경유
+export { LoginPage } from "./ui";      // ./ui/index.ts 라는 세그먼트 배럴 전제 → 금지
+```
+
+이유:
+- 세그먼트 배럴은 슬라이스 안에 *두 번째 관문*을 만들어 "어디가 진짜 계약인가"를 흐린다.
+- 슬라이스 **내부** 파일끼리는 어차피 전체 경로 상대 import를 써야 한다(순환 import 방지, 위 "Slice 내부에서의 Import 규칙"). 그러니 세그먼트 배럴은 내부에서도 불필요하다.
+
+### app·shared 레이어 (슬라이스 없음)
+
+`app`과 `shared`는 **슬라이스가 없는 세그먼트-only 레이어**다(→ `rules/layers.md`). 따라서 *슬라이스형 배럴* `index.ts`(예: `shared/ui/index.ts`, `app/index.ts`)를 두지 않는다.
+
+- 외부에서 필요한 단위로 **직접 import**한다: `import { Card } from "@/shared/ui/card"`.
+- `shared/ui`처럼 항목이 많은 세그먼트는 *항목(컴포넌트) 폴더 단위*의 `index.ts`만 둔다(→ 아래 "shared 세그먼트의 번들 최적화"). 세그먼트 루트(`shared/ui/index.ts`)에 모아 배럴하지 않는다.
+
+```
+shared/ui/
+├── card/
+│   ├── card.tsx
+│   └── index.ts     ✅ 컴포넌트 폴더 단위 public API
+└── index.ts         ❌ 세그먼트 루트 배럴 — 두지 않음
+```
+
 ## 좋은 Public API 3원칙
 
 1. **리팩토링 보호**: 슬라이스 내부 구조 변경이 외부에 영향 없어야 함
