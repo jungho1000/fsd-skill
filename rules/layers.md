@@ -77,6 +77,18 @@ features/
 - 재사용되지 않는 UI는 page 슬라이스 안에 넣어도 괜찮음
 - **포함**: 페이지 UI, 로딩/에러 상태(ui), 데이터 패칭(api)
 
+### 프레임워크 적응: Next.js App Router
+
+Next.js에서는 `app/`(App Router)과 `pages/`(Pages Router)가 모두 라우팅 예약어다. 그래서 FSD `pages` 레이어는 **`views/`로 이름을 바꿔** 쓴다. `app/`은 FSD app 레이어(초기화) + 라우팅 진입점으로 공용한다. 레이어의 역할·import 방향은 표준과 동일하다.
+
+| FSD 표준 | Next.js App Router |
+|---------|-------------------|
+| `app/` | `app/` (라우팅 진입점 + 앱 초기화 — `providers/`, `config/` 등) |
+| `pages/` | `views/` |
+| `widgets`·`features`·`entities`·`shared` | 동일 |
+
+`get-query-client`처럼 페이지가 쓰는 인프라는 `app/`이 아니라 `shared/`에 둔다 — 그래야 `views`(pages)가 `app`을 역참조하지 않는다.
+
 ### app/
 - 앱 전체를 초기화하는 코드
 - 슬라이스 없음 → 세그먼트 직접 배치

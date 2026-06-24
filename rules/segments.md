@@ -194,6 +194,68 @@ features/order-management/
 
 **주의**: `model/` 안에 서브 디렉토리가 여럿 필요할 만큼 모델이 다양해진다면, 슬라이스를 분리해야 한다는 신호일 수 있다. 먼저 슬라이스 분리를 검토하고, 분리 후에도 같은 슬라이스에 모델이 여럿이라면 그때 서브 디렉토리로 구성한다.
 
+### model은 순수 데이터 + 액션 — 표시 포맷은 ui로
+
+`model/`에는 **순수 데이터와 그 데이터를 다루는 액션/셀렉터**만 둔다. "어떻게 보여줄지"(통화 기호, 날짜 라벨, 말줄임 요약, 배지 색상/className 등)는 표현 관심사이므로 `model/`·매퍼·도메인 엔티티에 넣지 않는다.
+
+판별 기준: **표시용 문자열을 만들면 ui, 데이터만 다루면 model.**
+
+| 코드 | 분류 | 위치 |
+|------|------|------|
+| `amount: number`, `createdAt: ISO` | 순수 데이터 | `model/` (도메인 엔티티) |
+| `filterList()`, `countNeedConfirm()`, `createDefault()` | 데이터 액션/셀렉터 | `model/` |
+| `formatAmount(n) → "₩30,000"`, `formatDateTime(iso)` | 표시 포맷 | `ui/` (뷰 모델) |
+| `getBadge(type) → { tone, className }` | 표시 파생 | `ui/` (뷰 모델) |
+
+도메인 엔티티에 `amountLabel`/`dateLabel`처럼 *이미 포맷된* 필드를 두지 않는다 — 매퍼가 표시 포맷을 수행하게 되어 도메인이 표현에 오염된다. 엔티티는 원천 데이터(`amount`, `createdAt`)만 갖고, 포맷은 렌더 시점에 뷰 모델이 수행한다.
+
+### 뷰 모델은 ui 세그먼트에 colocate — `{컴포넌트}.model.ts`
+
+특정 컴포넌트의 렌더링을 위해 도메인 데이터를 가공하는 코드(포맷터, 배지 매핑, 표시용 파생 타입)는 그 컴포넌트 옆 `ui/{컴포넌트}.model.ts`에 둔다.
+
+```
+ui/
+├── receipt-card.tsx
+├── receipt-card.model.ts          # formatAmount, getReceiptTypeBadge … (카드 뷰 모델)
+├── filter-receipt-sheet.tsx
+└── filter-receipt-sheet.model.ts  # 시트 앵커 설정 등 (시트 뷰 모델)
+```
+
+배치 판단 (= 공유 코드 분리 원칙 + 사용처 응집):
+
+| 사용 범위 / 성격 | 위치 |
+|----------------|------|
+| 여러 슬라이스가 공유하는 도메인 모델 | `entities/` (→ [[entities]]) |
+| 한 슬라이스 안에서만 쓰는 표현 가공 | 그 슬라이스 `ui/`의 `{컴포넌트}.model.ts` |
+| 도메인 무관 범용 포맷터(`formatDate` 등) | `shared/format/` (아래 "포맷터" 항목) |
+
+### 값 객체는 팩토리 함수로 불변식을 강제
+
+값 객체(연·월, 좌표, 금액 범위 등)는 객체 리터럴로 직접 만들지 않고 **팩토리 함수**(`createX()`)를 통해 만든다. 팩토리가 불변식을 검증해 위반 시 에러를 던지고, 동결된 객체를 반환한다.
+
+- 타입 위반(정수 아님, `NaN` 등) → `TypeError`
+- 범위 위반(`month` ∉ 1~12 등) → `RangeError`
+- 반환값은 `readonly` 필드 + `Object.freeze`로 불변 보장
+
+```ts
+export interface YearMonth {
+  readonly year: number;
+  readonly month: number;
+}
+
+export function createYearMonth(year: number, month: number): YearMonth {
+  if (!Number.isInteger(year) || !Number.isInteger(month)) {
+    throw new TypeError(`정수 year/month만 허용 (year=${year}, month=${month})`);
+  }
+  if (month < 1 || month > 12) {
+    throw new RangeError(`month는 1~12 (month=${month})`);
+  }
+  return Object.freeze({ year, month });
+}
+```
+
+외부 입력(URL 쿼리, 폼 등)에서 값 객체를 만들 때는 팩토리를 `try/catch`로 감싸 위반 값을 기본값으로 복구한다 — **경계에서 던지고 호출부에서 복구**한다. 앱 내부(항상 유효한 값)에서는 그대로 통과시킨다.
+
 ### 파일명 규칙
 
 파일명도 **도메인 기반**으로 짓는다. 기술적 역할명은 금지한다.
