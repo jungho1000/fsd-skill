@@ -35,10 +35,10 @@ FSD는 원칙이 명확하지만, 실제 코드를 작성할 때는 판단이 �
 ## 설치
 
 ```bash
-git clone https://github.com/jungho1000/fsd-skill.git ~/.claude/skills/fsd
+npx skills add jungho1000/fsd-skill
 ```
 
-Claude Code를 재시작하면 `/fsd` 스킬이 활성화됩니다.
+Claude Code를 재시작하면 `/fsd` 스킬이 활성화됩니다. 업데이트는 같은 명령을 다시 실행하면 최신 스냅샷을 다시 받습니다.
 
 ---
 

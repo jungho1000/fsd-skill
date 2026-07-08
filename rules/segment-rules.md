@@ -25,10 +25,11 @@ status: published
    - 금지: `components`, `hooks`, `types`, `utils`, `helpers`, `lib`
    - 이유: *기술 타입* 명칭은 안에 무엇이 있는지 알려주지 않는다.
 
-4. **세그먼트에는 배럴 `index.ts`를 두지 않는다**
-   - `index.ts`(public API)는 *슬라이스*의 계약이다. 슬라이스 `index.ts`는 세그먼트 *파일*에서 직접 re-export한다.
-   - `app`·`shared`는 슬라이스가 없는 세그먼트-only 레이어이므로 슬라이스형 배럴 `index.ts`를 두지 않는다(`shared/ui/<component>/index.ts` 같은 *컴포넌트 폴더 단위* index는 예외).
-   - 자세히 → [[public-api]] "세그먼트에는 배럴 index.ts를 두지 않는다".
+4. **`index.ts`(public API)는 캡슐화 경계 도구다 — 슬라이스든 세그먼트든 감출 내부가 있으면 둔다**
+   - 슬라이스: 외부 계약이므로 `index.ts` **필수**.
+   - 세그먼트: 내부 구현을 감출 필요가 있으면 `index.ts`로 public API를 **둘 수 있다**(선택). 감출 내부가 없거나 파일이 하나뿐이면 두지 않는다 — 전부 통과시키는 배럴은 관문만 하나 더 만든다.
+   - 공통 가드레일: 큐레이팅된 named export만(`export *` 금지). 한 단위 **내부** 파일끼리는 상대경로로 참조해 자기 배럴을 경유하지 않는다(순환 방지).
+   - 자세히 → [[public-api]] "`index.ts`는 캡슐화 도구다".
 
 ## 이 규칙이 답하지 않는 것
 

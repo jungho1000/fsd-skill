@@ -15,10 +15,11 @@ status: published
 - `shared`, `app` 레이어는 슬라이스 없음
 
 ### 식별 룰
-- **`index.ts`가 존재하는 폴더 = 슬라이스**
-- 슬라이스의 하위는 세그먼트로만 구성된다 (슬라이스 안에 또 다른 슬라이스가 들어가지 않는다)
-- 그룹 폴더(아래 "슬라이스 그룹핑" 참고)는 `index.ts`를 갖지 않으므로 슬라이스가 아니다 — 슬라이스 묶음일 뿐
-- 이 식별 룰 덕분에 *외부에서 참조*하는 것(절대 경로 + `index.ts`)과 *내부에서 참조*하는 것(상대 경로)의 경계가 명확해진다 (→ `rules/public-api.md`)
+- 슬라이스는 **슬라이스 레이어(`entities`/`features`/`widgets`/`views`(또는 `pages`))에서만** 존재한다. `shared`·`app`은 슬라이스가 없다 — 이 두 레이어의 직속 폴더는 `index.ts` 유무와 무관하게 세그먼트다.
+- 슬라이스 레이어 안에서 슬라이스는 **도메인 단위 직속 폴더**이며, 하위로 세그먼트만 갖고 공개 API(`index.ts`)로 외부에 노출한다.
+- **`index.ts`는 슬라이스 판별기가 아니라 캡슐화(공개 API) 도구다.** 슬라이스에는 필수지만, 캡슐화가 필요한 세그먼트(슬라이스 내부든 shared/app이든)에도 큐레이팅된 배럴로 둘 수 있다 (와일드카드 금지 → `rules/public-api.md`).
+- 그룹 폴더(아래 "슬라이스 그룹핑" 참고)는 `index.ts`가 없고 하위에 (세그먼트가 아니라) 슬라이스를 담는 슬라이스 묶음이다.
+- 이 구분 덕분에 *외부에서 참조*하는 것(절대 경로 + `index.ts`)과 *내부에서 참조*하는 것(상대 경로)의 경계가 유지된다 (→ `rules/public-api.md`)
 
 ### 핵심 원칙: 제로 커플링 & 높은 응집도
 
@@ -58,8 +59,7 @@ features/
 features/
 └── user-profile/
     ├── ui/
-    │   ├── UserProfileCard.tsx
-    │   └── index.ts        ← ui 세그먼트의 public API
+    │   └── UserProfileCard.tsx    ← 슬라이스 index.ts가 이 파일에서 직접 re-export
     ├── api/
     │   └── updateProfile.ts
     ├── model/

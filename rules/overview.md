@@ -64,7 +64,7 @@ shared    ← 프레임워크 무관 공통 코드
 
 1. **레이어 import 규칙**: 상위 레이어는 하위를 import할 수 있지만, 하위 레이어는 상위를 import 불가
 2. **슬라이스 독립성**: 같은 레이어의 슬라이스끼리 직접 import 불가 (entities의 @x 제외)
-3. **Public API 규칙**: 슬라이스 외부에서는 `index.ts`만 참조, 내부 파일 직접 접근 불가
+3. **Public API 규칙**: 캡슐화된 단위(슬라이스, 그리고 배럴을 둔 세그먼트) 외부에서는 `index.ts`만 참조, 내부 파일 직접 접근 불가
 4. **세그먼트 이름**: 목적을 기술해야 함. `components`, `hooks`, `types`, `utils`, `helpers`, `lib`는 금지. `ui/model/api`는 필수가 아니며 이름·구성은 자유 — 자세한 하드 룰은 [[segment-rules]]
 
 ## 레이어별 특수 규칙
